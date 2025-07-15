@@ -12,6 +12,7 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 
 ## TODO - Features to add in future version
 
+- Add Fahrenheit conversion
 - Automatically delete log files older than 7 days
 - Optional red warning text if temperature exceeds preset threshold
 - Auto minimise the PowerShell window
