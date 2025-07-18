@@ -20,7 +20,7 @@ Add-Type -AssemblyName System.Drawing
 
 # Configuration
 $config = @{
-    UpdateInterval = 5000  # 5000 = 5 seconds, 30000 = 30 seconds, etc.
+    UpdateInterval = 30000  # 5000 = 5 seconds, 30000 = 30 seconds, etc.
     LogPath = "$env:USERPROFILE\temperature_log_$(Get-Date -Format 'yyyy-MM-dd').csv"
     DisplayFahrenheit = $true
 }

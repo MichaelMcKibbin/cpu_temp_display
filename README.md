@@ -25,7 +25,7 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 
 ### Added a configuration hashtable - Makes it easy to adjust settings in one place
 
-- Update interval (set to 30 seconds as mentioned in README)
+- Update interval (Set to desired seconds, 1000 = 1 second.)
 - Log file path
 - Option to display Fahrenheit
 
@@ -54,6 +54,7 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 
 ## TODO - Features to add in future version
 
+- Tidy up the threshold setting. Allow user to enter actual seconds - do the x1000 elsewhere.
 - Add a toggle to choose which temp to display
 - Prettier display
 - Automatically delete log files older than 7 days
