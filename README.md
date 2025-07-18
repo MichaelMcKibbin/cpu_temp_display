@@ -61,11 +61,12 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 - Allow user to set delete interval
 - Optional red warning text if temperature exceeds preset threshold
 - Allow user to set threshold temp
-- Pop-up warning when critical heat is reached - _caution_ need to ensure only one pop-up allowed at a time.
+- Pop-up warning when critical heat is reached - _CAUTION! Need to ensure only one pop-up allowed at a time_
 - Check CPU type and lookup manufacturer recommended max temp - how? where?
-- Auto minimise the PowerShell window
+- Auto minimise the PowerShell window on script run
 - Auto restart in Administrator mode if run in user mode
-- Auto launch PowerShell in minimised administrator mode - is this possible?
+- Auto launch PowerShell in administrator mode - Error in normal mode: `Get-WmiObject : Access denied`
+  - Auto launch PowerShell in minimised administrator mode - requires previous step
 
 ## Requirements
 
