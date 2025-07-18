@@ -1,3 +1,20 @@
+<#
+.SYNOPSIS
+    CPU Temperature Monitor and Logger
+
+.DESCRIPTION
+    Displays and logs CPU temperature in both Celsius and Fahrenheit
+
+.NOTES
+    Version:        1.1
+    Author:         Michael McKibbin
+    Creation Date:  July 15, 2025
+    Last Modified:  July 18, 2025
+    Change Log:
+    1.1 - Added configuration options, improved logging, fixed timer disposal
+    1.0 - Initial release
+#>
+
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 

@@ -2,7 +2,7 @@
 
 This PowerShell script monitors your CPU temperature in real-time using a simple graphical display. It updates every 30 seconds and logs temperature data to a daily CSV file.
 
-![screenshot](screenshot_cpu_temp.png)
+![screenshot](screenshot_cpu_temp_CandF.png)
 
 ## Features
 
@@ -12,30 +12,41 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 
 ## Latest Changes
 
-# Added a configuration hashtable - Makes it easy to adjust settings in one place
+### Added comment block
+
+- Synopsis - A brief description of what the script does
+- Description - A more detailed explanation of the script's functionality
+- Notes - Contains metadata about the script:
+  - Version number
+  - Author name
+  - Creation date
+  - Last modified date
+    -Change log with version history
+
+### Added a configuration hashtable - Makes it easy to adjust settings in one place
 
 - Update interval (set to 30 seconds as mentioned in README)
 - Log file path
 - Option to display Fahrenheit
 
-# Fixed logging issues
+### Fixed logging issues
 
 - Created a dedicated Write-TempLog function
 - Fixed the variable name bug introduced when adding °F (was using $temp instead of $tempC/$tempF)
 - Now logs both Celsius and Fahrenheit in a single line
 - Eliminated redundant logging code
 
-# Fixed Form / Timer handling issues
+### Fixed Form / Timer handling issues
 
 - Added a FormClosed event handler to properly terminate the Form and the timer.
   The timer previouly continued to run in the PowerShell instance and running the script again resulted in two timers triggering additional temperature checks and logging. Closing PowerShell did end the timers, but it's better to clean up resources properly.
 
-# Improved UI
+### Improved UI
 
 - Added option to show both temperature units
 - Organized UI creation code into a logical section
 
-# Better code organization
+### Better code organization
 
 - Grouped related functionality
 - Improved readability with consistent spacing and formatting
@@ -71,4 +82,10 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 
 ## The script in action
 
+### Version 1.0
+
 ![screenshot](screenshot_script.png)
+
+### Version 1.1
+
+![screenshot](screenshot-script-with-fahrenheit.png)
