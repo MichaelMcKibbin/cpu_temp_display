@@ -6,21 +6,58 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 
 ## Features
 
-- Displays current CPU temperature in a small window
+- Displays current CPU temperature in a small window (°C & °F)
 - Updates every 30 seconds (configurable)
 - Logs data to a daily CSV file (e.g. `temperature_log_2025-07-15.csv`)
 
+## Latest Changes
+
+# Added a configuration hashtable - Makes it easy to adjust settings in one place
+
+- Update interval (set to 30 seconds as mentioned in README)
+- Log file path
+- Option to display Fahrenheit
+
+# Fixed logging issues
+
+- Created a dedicated Write-TempLog function
+- Fixed the variable name bug introduced when adding °F (was using $temp instead of $tempC/$tempF)
+- Now logs both Celsius and Fahrenheit in a single line
+- Eliminated redundant logging code
+
+# Fixed Form / Timer handling issues
+
+- Added a FormClosed event handler to properly terminate the Form and the timer.
+  The timer previouly continued to run in the PowerShell instance and running the script again resulted in two timers triggering additional temperature checks and logging. Closing PowerShell did end the timers, but it's better to clean up resources properly.
+
+# Improved UI
+
+- Added option to show both temperature units
+- Organized UI creation code into a logical section
+
+# Better code organization
+
+- Grouped related functionality
+- Improved readability with consistent spacing and formatting
+- Removed commented-out code
+
 ## TODO - Features to add in future version
 
-- Add Fahrenheit conversion
+- Add a toggle to choose which temp to display
+- Prettier display
 - Automatically delete log files older than 7 days
+- Allow user to set delete interval
 - Optional red warning text if temperature exceeds preset threshold
+- Allow user to set threshold temp
+- Pop-up warning when critical heat is reached - _caution_ need to ensure only one pop-up allowed at a time.
+- Check CPU type and lookup manufacturer recommended max temp - how? where?
 - Auto minimise the PowerShell window
 - Auto restart in Administrator mode if run in user mode
+- Auto launch PowerShell in minimised administrator mode - is this possible?
 
 ## Requirements
 
-- Windows (with WMI access)
+- Windows (with WMI access) - _Run in Administrator Mode_
 - PowerShell 5.x or newer
 - .NET Windows Forms (built-in on most Windows systems)
 - Visual Studio Code (recommended) with the PowerShell extension

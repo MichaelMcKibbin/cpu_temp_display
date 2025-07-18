@@ -1,12 +1,51 @@
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
-# Set up the log file path
-#$logPath = "$env:USERPROFILE\temperature_log.csv"
-$today = Get-Date -Format "yyyy-MM-dd"
-$logPath = "$env:USERPROFILE\temperature_log_$today.csv"
+# Configuration
+$config = @{
+    UpdateInterval = 5000  # 5000 = 5 seconds, 30000 = 30 seconds, etc.
+    LogPath = "$env:USERPROFILE\temperature_log_$(Get-Date -Format 'yyyy-MM-dd').csv"
+    DisplayFahrenheit = $true
+}
 
-# Create the main display form
+# Function to get CPU temperature raw value in Kelvin (x10)
+function Get-CPUTempRaw {
+    return Get-WmiObject -Namespace "root/wmi" -Class MSAcpi_ThermalZoneTemperature |
+        Select-Object -ExpandProperty CurrentTemperature -ErrorAction SilentlyContinue
+}
+
+# Function to get CPU temperature in Celsius
+function Get-CPUTempC {
+    $tempRaw = Get-CPUTempRaw
+    if ($tempRaw) {
+        return [math]::Round(($tempRaw - 2732) / 10, 1)
+    } else {
+        return "N/A"
+    }
+}
+
+# Function to get CPU temperature in Fahrenheit
+function Get-CPUTempF {
+    $tempRaw = Get-CPUTempRaw
+    if ($tempRaw) {
+        return [math]::Round((($tempRaw - 2732) / 10 * 9 / 5 + 32), 1)
+    } else {
+        return "N/A"
+    }
+}
+
+# Function to log temperature data
+function Write-TempLog {
+    param (
+        [string]$timestamp,
+        [string]$tempC,
+        [string]$tempF
+    )
+    
+    "$timestamp,$tempC,$tempF" | Out-File -FilePath $config.LogPath -Append
+}
+
+# Create UI
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "CPU Temperature Monitor"
 $form.Size = New-Object System.Drawing.Size(300, 100)
@@ -16,43 +55,39 @@ $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false
 $form.MinimizeBox = $true
 
-# Create a label to display the temperature
 $label = New-Object System.Windows.Forms.Label
 $label.AutoSize = $true
 $label.Location = New-Object System.Drawing.Point(30, 30)
 $label.Font = New-Object System.Drawing.Font("Segoe UI", 16, [System.Drawing.FontStyle]::Regular)
 $form.Controls.Add($label)
 
-# Function to get CPU temperature
-# Converts Kelvin to Centigrade
-function Get-CPUTemp {
-    $tempRaw = Get-WmiObject -Namespace "root/wmi" -Class MSAcpi_ThermalZoneTemperature |
-        Select-Object -ExpandProperty CurrentTemperature -ErrorAction SilentlyContinue
-    if ($tempRaw) {
-        return [math]::Round(($tempRaw - 2732) / 10, 1)
-    } else {
-        return "N/A"
-    }
-}
-
 # Timer to update temperature and log it
 $timer = New-Object System.Windows.Forms.Timer
-$timer.Interval = 5000  # 1000 = 1 second. 30000 = 30 seconds 
+$timer.Interval = $config.UpdateInterval
 $timer.Add_Tick({
-    $temp = Get-CPUTemp
+    $tempC = Get-CPUTempC
+    $tempF = Get-CPUTempF
     $timestamp = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-    $label.Text = "CPU Temp: $temp°C"
-
-    if ($temp -ne "N/A") {
-        "$timestamp,$temp" | Out-File -FilePath $logPath -Append
+    
+    # Update display
+    if ($config.DisplayFahrenheit) {
+        $label.Text = "CPU Temp: $tempC°C / $tempF°F"
     } else {
-        "$timestamp,N/A" | Out-File -FilePath $logPath -Append
+        $label.Text = "CPU Temp: $tempC°C"
     }
-
+    
+    # Log data
+    Write-TempLog -timestamp $timestamp -tempC $tempC -tempF $tempF
 })
 
 # Start monitoring
 $timer.Start()
+
+# Handle form closing to clean up resources
+$form.Add_FormClosed({
+    $timer.Stop()
+    $timer.Dispose()
+})
 
 # Run the form
 [System.Windows.Forms.Application]::Run($form)
