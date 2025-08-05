@@ -25,7 +25,11 @@ $config = @{
     DisplayFahrenheit = $true
 }
 
-# Function to get CPU temperature raw value in Kelvin (x10)
+# Function to get CPU temperature raw value in Kelvin
+# To be more precise, the ACPI thermal zone temperature is an abstract representation created by the BIOS/UEFI firmware that can include multiple sensors
+# It is sometimes possible to map particular sensors more precisely, e.g TZ00, TZ01, etc., but it depends on the system.
+# In my case, I can be fairly certain that I'm getting the best representation of the CPU temperature by watching the changes when adding/removing load on the CPU
+
 function Get-CPUTempRaw {
     return Get-WmiObject -Namespace "root/wmi" -Class MSAcpi_ThermalZoneTemperature |
         Select-Object -ExpandProperty CurrentTemperature -ErrorAction SilentlyContinue
