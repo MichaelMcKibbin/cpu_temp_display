@@ -6,7 +6,7 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 
 ##     Change Log:
 
-- 1.2 - Summary:
+### 1.2 - 
         Revised temperature update logic to use a unified Get-CPUTemp function that safely retrieves both Celsius and Fahrenheit values.
         The timer event now handles missing or invalid temperature readings gracefully and displays "N/A" instead of blank values. Degree symbols are rendered correctly using Unicode ([char]176]) to prevent mojibake (“Â°”).
 
@@ -17,8 +17,20 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
         Logging now records $null when no temperature reading is available, avoiding incorrect entries.
         Improved robustness and readability of the update timer block.
 
- - 1.1 - Added configuration options, improved logging, fixed timer disposal
- - 1.0 - Initial release
+### 1.1 
+- Added configuration options, improved logging, fixed timer disposal
+- Created a dedicated Write-TempLog function
+- Fixed the variable name bug introduced when adding °F (was using $temp instead of $tempC/$tempF)
+- Now logs both Celsius and Fahrenheit in a single line
+- Eliminated redundant logging code- Added a FormClosed event handler to properly terminate the Form and the timer.
+  The timer previouly continued to run in the PowerShell instance and running the script again resulted in two timers triggering additional temperature checks and logging. Closing PowerShell did end the timers, but it's better to clean up resources properly.
+- Added option to show both temperature units
+- Organized UI creation code into a logical section
+- Grouped related functionality
+- Improved readability with consistent spacing and formatting
+- Removed commented-out code
+
+### 1.0 - Initial release
 
 ## Features
 
@@ -26,52 +38,16 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 - Updates every 30 seconds (configurable)
 - Logs data to a daily CSV file (e.g. `temperature_log_2025-07-15.csv`)
 
-## Latest Changes
 
-### Added comment block
-
-- Synopsis - A brief description of what the script does
-- Description - A more detailed explanation of the script's functionality
-- Notes - Contains metadata about the script:
-  - Version number
-  - Author name
-  - Creation date
-  - Last modified date
-    -Change log with version history
-
-### Added a configuration hashtable - Makes it easy to adjust settings in one place
+### Contains a configuration hashtable - Makes it easy to adjust settings in one place
 
 - Update interval (Set to desired seconds, 1000 = 1 second.)
 - Log file path
 - Option to display Fahrenheit
 
-### Fixed logging issues
-
-- Created a dedicated Write-TempLog function
-- Fixed the variable name bug introduced when adding °F (was using $temp instead of $tempC/$tempF)
-- Now logs both Celsius and Fahrenheit in a single line
-- Eliminated redundant logging code
-
-### Fixed Form / Timer handling issues
-
-- Added a FormClosed event handler to properly terminate the Form and the timer.
-  The timer previouly continued to run in the PowerShell instance and running the script again resulted in two timers triggering additional temperature checks and logging. Closing PowerShell did end the timers, but it's better to clean up resources properly.
-
-### Improved UI
-
-- Added option to show both temperature units
-- Organized UI creation code into a logical section
-
-### Better code organization
-
-- Grouped related functionality
-- Improved readability with consistent spacing and formatting
-- Removed commented-out code
-
 ## TODO - Features to add in future version
 
 - Tidy up the threshold setting. Allow user to enter actual seconds - do the x1000 elsewhere.
-- Add a toggle to choose which temp to display
 - Prettier display
 - Automatically delete log files older than 7 days
 - Allow user to set delete interval
@@ -82,7 +58,7 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 - Auto minimise the PowerShell window on script run
 - Auto restart in Administrator mode if run in user mode
 - Auto launch PowerShell in administrator mode - Error in normal mode: `Get-WmiObject : Access denied`
-  - Auto launch PowerShell in minimised administrator mode - requires previous step
+- Auto launch PowerShell in minimised administrator mode - requires previous step
 
 ## Requirements
 
@@ -94,7 +70,7 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 ## Usage
 
 1. Clone this repository:
-   ```bash
+   ```
    git clone https://github.com/MichaelMcKibbin/cpu_temp_display
    ```
 
@@ -105,5 +81,7 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 ![screenshot](screenshot_script.png)
 
 ### Version 1.1
+### Version 1.2
+
 
 ![screenshot](screenshot-script-with-fahrenheit.png)
