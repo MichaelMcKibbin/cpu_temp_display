@@ -4,6 +4,22 @@ This PowerShell script monitors your CPU temperature in real-time using a simple
 
 ![screenshot](screenshot_cpu_temp_CandF.png)
 
+##     Change Log:
+
+- 1.2 - Summary:
+        Revised temperature update logic to use a unified Get-CPUTemp function that safely retrieves both Celsius and Fahrenheit values.
+        The timer event now handles missing or invalid temperature readings gracefully and displays "N/A" instead of blank values. Degree symbols are rendered correctly using Unicode ([char]176]) to prevent mojibake (“Â°”).
+
+        Details:
+        Replaced separate Get-CPUTempC and Get-CPUTempF calls with consolidated Get-CPUTemp.
+        Added null checks to avoid empty display when temperature data unavailable.
+        Updated UI label text logic for correct degree symbol display.
+        Logging now records $null when no temperature reading is available, avoiding incorrect entries.
+        Improved robustness and readability of the update timer block.
+
+ - 1.1 - Added configuration options, improved logging, fixed timer disposal
+ - 1.0 - Initial release
+
 ## Features
 
 - Displays current CPU temperature in a small window (°C & °F)
