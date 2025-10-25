@@ -6,11 +6,22 @@
     Displays and logs CPU temperature in both Celsius and Fahrenheit
 
 .NOTES
-    Version:        1.1
+    Version:        1.2
     Author:         Michael McKibbin
     Creation Date:  July 15, 2025
-    Last Modified:  July 18, 2025
+    Last Modified:  Oct 25, 2025
     Change Log:
+
+    1.2 - Summary:
+        Revised temperature update logic to use a unified Get-CPUTemp function that safely retrieves both Celsius and Fahrenheit values. The timer event now handles missing or invalid temperature readings gracefully and displays "N/A" instead of blank values. Degree symbols are rendered correctly using Unicode ([char]176]) to prevent mojibake (“Â°”).
+
+        Details:
+        Replaced separate Get-CPUTempC and Get-CPUTempF calls with consolidated Get-CPUTemp.
+        Added null checks to avoid empty display when temperature data unavailable.
+        Updated UI label text logic for correct degree symbol display.
+        Logging now records $null when no temperature reading is available, avoiding incorrect entries.
+        Improved robustness and readability of the update timer block.
+
     1.1 - Added configuration options, improved logging, fixed timer disposal
     1.0 - Initial release
 #>
@@ -20,7 +31,7 @@ Add-Type -AssemblyName System.Drawing
 
 # Configuration
 $config = @{
-    UpdateInterval = 30000  # 5000 = 5 seconds, 30000 = 30 seconds, etc.
+    UpdateInterval = 10000  # 5000 = 5 seconds, 30000 = 30 seconds, etc.
     LogPath = "$env:USERPROFILE\temperature_log_$(Get-Date -Format 'yyyy-MM-dd').csv"
     DisplayFahrenheit = $true
 }
@@ -31,29 +42,25 @@ $config = @{
 # In my case, I can be fairly certain that I'm getting the best representation of the CPU temperature by watching the changes when adding/removing load on the CPU
 
 function Get-CPUTempRaw {
-    return Get-WmiObject -Namespace "root/wmi" -Class MSAcpi_ThermalZoneTemperature |
-        Select-Object -ExpandProperty CurrentTemperature -ErrorAction SilentlyContinue
+  try {
+    $t = Get-CimInstance -Namespace root/wmi -ClassName MSAcpi_ThermalZoneTemperature -ErrorAction Stop |
+         Where-Object { $_.CurrentTemperature -gt 0 } |
+         Select-Object -First 1 -ExpandProperty CurrentTemperature
+    # Filter obviously bad values
+    if ($null -eq $t -or $t -in 0, 2732, 65535) { return $null }
+    [int]$t
+  } catch {
+    $null
+  }
+}
+function Get-CPUTemp {
+  $raw = Get-CPUTempRaw
+  if ($null -eq $raw) { return $null }
+  $c = [math]::Round(($raw/10) - 273.15, 1)
+  $f = [math]::Round((($c * 9) / 5) + 32, 1)
+  [pscustomobject]@{ C = $c; F = $f; Raw = $raw }
 }
 
-# Function to get CPU temperature in Celsius
-function Get-CPUTempC {
-    $tempRaw = Get-CPUTempRaw
-    if ($tempRaw) {
-        return [math]::Round(($tempRaw - 2732) / 10, 1)
-    } else {
-        return "N/A"
-    }
-}
-
-# Function to get CPU temperature in Fahrenheit
-function Get-CPUTempF {
-    $tempRaw = Get-CPUTempRaw
-    if ($tempRaw) {
-        return [math]::Round((($tempRaw - 2732) / 10 * 9 / 5 + 32), 1)
-    } else {
-        return "N/A"
-    }
-}
 
 # Function to log temperature data
 function Write-TempLog {
@@ -84,22 +91,35 @@ $form.Controls.Add($label)
 
 # Timer to update temperature and log it
 $timer = New-Object System.Windows.Forms.Timer
-$timer.Interval = $config.UpdateInterval
-$timer.Add_Tick({
-    $tempC = Get-CPUTempC
-    $tempF = Get-CPUTempF
-    $timestamp = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-    
-    # Update display
-    if ($config.DisplayFahrenheit) {
-        $label.Text = "CPU Temp: $tempC°C / $tempF°F"
+$timer.Interval = [int]$config.UpdateInterval
+$timer.add_Tick({
+    $t = Get-CPUTemp           # returns @{C=..; F=..; Raw=..} or $null
+    $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+
+    if ($t) {
+        $c = $t.C
+        $f = $t.F
+
+        if ($config.DisplayFahrenheit) {
+            # Use a reliable degree symbol to avoid "Â°" mojibake
+            $label.Text = "CPU Temp: $c$([char]176)C / $f$([char]176)F"
+        } else {
+            $label.Text = "CPU Temp: $c$([char]176)C"
+        }
     } else {
-        $label.Text = "CPU Temp: $tempC°C"
+        # No reading available
+        $label.Text = "CPU Temp: N/A"
+        $c = $null
+        $f = $null
     }
-    
-    # Log data
-    Write-TempLog -timestamp $timestamp -tempC $tempC -tempF $tempF
+
+    # Log either the real values or nulls if unavailable
+    Write-TempLog -timestamp $timestamp -tempC $c -tempF $f
 })
+
+# (Make sure your UI starts the timer somewhere)
+# $timer.Start()
+
 
 # Start monitoring
 $timer.Start()
